@@ -103,28 +103,24 @@ $searchForm.on("submit", async function (evt) {
  */
 
 async function getEpisodesOfShow(id) {
-  
+  const episodeAPI = `http://api.tvmaze.com/shows/${id}/episodes`;
 
+  try {
+    const episodeResponse = await axios.get(episodeAPI);
+    const episodeData = episodeResponse.data;
+    console.log(episodeData);
 
-  const episodeAPI = `http://api.tvmaze.com/search/shows?q=${searchformterm.val()}/${28529}/episodes`
-
-  console.log (id);
-
-  console.log (episodeAPI);
-  
-
-  const episodeResponse= await axios.get(episodeAPI);
-    
-  const episodeData = episodeResponse.data
-      console.log(episodeData);
-
- return episodeResponse.data.map (e => ({
-  id: e.id,
-  name: e.name,
-  number: e.number,
-  season: e.season,
-})
- )};
+    return episodeData.map(e => ({
+      id: e.id,
+      name: e.name,
+      number: e.number,
+      season: e.season,
+    }));
+  } catch (error) {
+    console.error('Error fetching episodes:', error);
+    return []; // Return an empty array in case of error
+  }
+};
 
 
 /** Write a clear docstring for this function... */
@@ -145,13 +141,18 @@ function populateEpisodes(episodes) {
     $episodesArea.show();
  }
 
- async function getEpisodesAndDisplay (evt){
-  console.log (evt);
+ async function getEpisodesAndDisplay(evt) {
+  evt.preventDefault();
+  
+  const showId = $(evt.target).closest(".Show").data("show-id");
+  console.log('Show ID:', showId); // Debugging line
 
-  const showId = $(evt.target).closest (".Shows").data("show-id");
-
-  const episodes = await getEpisodesOfShow (showId);
-  populateEpisodes(episodes);
- }
+  if (showId) {
+    const episodes = await getEpisodesOfShow(showId);
+    populateEpisodes(episodes);
+  } else {
+    console.log('No Show ID found'); // Debugging line
+  }
+}
  
-$showsList.on("click",".Show-getEpisodes",getEpisodesAndDisplay);
+$showsList.on("click", ".Show-getEpisodes", getEpisodesAndDisplay);
